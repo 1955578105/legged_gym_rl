@@ -58,8 +58,8 @@ class BaseTask():
             self.graphics_device_id = -1
 
         self.num_envs = cfg.env.num_envs
-        self.num_obs = cfg.env.num_observations
-        self.num_privileged_obs = cfg.env.num_privileged_obs
+        self.num_obs = cfg.env.num_observations  
+        self.num_privileged_obs = cfg.env.num_privileged_obs  #特权信息
         self.num_actions = cfg.env.num_actions
 
         # optimization flags for pytorch JIT
@@ -81,7 +81,7 @@ class BaseTask():
         self.extras = {}
 
         # create envs, sim and viewer
-        self.create_sim()
+        self.create_sim()   #isaacgym的api 创建sim
         self.gym.prepare_sim(self.sim)
 
         # todo: read from config
@@ -104,11 +104,11 @@ class BaseTask():
     def get_privileged_observations(self):
         return self.privileged_obs_buf
 
-    def reset_idx(self, env_ids):
+    def reset_idx(self, env_ids): #重置某个环境
         """Reset selected robots"""
         raise NotImplementedError
 
-    def reset(self):
+    def reset(self):  #重置所有
         """ Reset all robots"""
         self.reset_idx(torch.arange(self.num_envs, device=self.device))
         obs, privileged_obs, _, _, _ = self.step(torch.zeros(self.num_envs, self.num_actions, device=self.device, requires_grad=False))

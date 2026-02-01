@@ -46,15 +46,15 @@ class TaskRegistry():
         self.task_classes = {}
         self.env_cfgs = {}
         self.train_cfgs = {}
-    
+    #  分别是 任务配置  环境配置 训练配置 
     def register(self, name: str, task_class: VecEnv, env_cfg: LeggedRobotCfg, train_cfg: LeggedRobotCfgPPO):
         self.task_classes[name] = task_class
         self.env_cfgs[name] = env_cfg
         self.train_cfgs[name] = train_cfg
-    
+    # 任务
     def get_task_class(self, name: str) -> VecEnv:
         return self.task_classes[name]
-    
+    # 环境配置 训练配置
     def get_cfgs(self, name) -> Tuple[LeggedRobotCfg, LeggedRobotCfgPPO]:
         train_cfg = self.train_cfgs[name]
         env_cfg = self.env_cfgs[name]
@@ -94,6 +94,7 @@ class TaskRegistry():
         # parse sim params (convert to dict first)
         sim_params = {"sim": class_to_dict(env_cfg.sim)}
         sim_params = parse_sim_params(args, sim_params)
+        # 把 配置信息传给 task 类 即 LeggedRobot的init函数
         env = task_class(   cfg=env_cfg,
                             sim_params=sim_params,
                             physics_engine=args.physics_engine,
@@ -101,6 +102,8 @@ class TaskRegistry():
                             headless=args.headless)
         return env, env_cfg
 
+
+   # 这个函数 与rsl_rl 进行连接
     def make_alg_runner(self, env, name=None, args=None, train_cfg=None, log_root="default") -> Tuple[OnPolicyRunner, LeggedRobotCfgPPO]:
         """ Creates the training algorithm  either from a registered namme or from the provided config file.
 
@@ -127,7 +130,7 @@ class TaskRegistry():
         if train_cfg is None:
             if name is None:
                 raise ValueError("Either 'name' or 'train_cfg' must be not None")
-            # load config files
+            # load config files  #接受了train_cfg 
             _, train_cfg = self.get_cfgs(name)
         else:
             if name is not None:
@@ -143,7 +146,7 @@ class TaskRegistry():
         else:
             log_dir = os.path.join(log_root, datetime.now().strftime('%b%d_%H-%M-%S') + '_' + train_cfg.runner.run_name)
         
-        train_cfg_dict = class_to_dict(train_cfg)
+        train_cfg_dict = class_to_dict(train_cfg)   # 将类转为字典形式
         runner = OnPolicyRunner(env, train_cfg_dict, log_dir, device=args.rl_device)
         #save resume path before creating a new log_dir
         resume = train_cfg.runner.resume

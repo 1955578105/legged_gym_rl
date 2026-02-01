@@ -30,22 +30,22 @@
 
 from .base_config import BaseConfig
 
-class LeggedRobotCfg(BaseConfig):
-    class env:
-        num_envs = 4096
-        num_observations = 235
+class LeggedRobotCfg(BaseConfig): #环境和机器人参数
+    class env: #环境参数
+        num_envs = 4096   #环境数量 
+        num_observations = 235 #状态空间维度  输入神经网络的特征数
         num_privileged_obs = None # if not None a priviledge_obs_buf will be returned by step() (critic obs for assymetric training). None is returned otherwise 
-        num_actions = 12
+        num_actions = 12  #动作空间维度  
         env_spacing = 3.  # not used with heightfields/trimeshes 
         send_timeouts = True # send time out information to the algorithm
         episode_length_s = 20 # episode length in seconds
 
-    class terrain:
+    class terrain: #地形参数
         mesh_type = 'trimesh' # "heightfield" # none, plane, heightfield or trimesh
-        horizontal_scale = 0.1 # [m]
-        vertical_scale = 0.005 # [m]
+        horizontal_scale = 0.1 # [m] #垂直和水平的分辨率
+        vertical_scale = 0.005 # [m] #高度方向的分辨率
         border_size = 25 # [m]
-        curriculum = True
+        curriculum = True #课程学习
         static_friction = 1.0
         dynamic_friction = 1.0
         restitution = 0.
@@ -61,23 +61,23 @@ class LeggedRobotCfg(BaseConfig):
         num_rows= 10 # number of terrain rows (levels)
         num_cols = 20 # number of terrain cols (types)
         # terrain types: [smooth slope, rough slope, stairs up, stairs down, discrete]
-        terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2]
+        terrain_proportions = [0.1, 0.1, 0.35, 0.25, 0.2] #地形类型比例
         # trimesh only:
         slope_treshold = 0.75 # slopes above this threshold will be corrected to vertical surfaces
 
-    class commands:
+    class commands: #控制命令  正常是手柄给的
         curriculum = False
         max_curriculum = 1.
         num_commands = 4 # default: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
-        resampling_time = 10. # time before command are changed[s]
+        resampling_time = 10. #间隔多少秒改变一次命令
         heading_command = True # if true: compute ang vel command from heading error
-        class ranges:
+        class ranges: #命令范围
             lin_vel_x = [-1.0, 1.0] # min max [m/s]
             lin_vel_y = [-1.0, 1.0]   # min max [m/s]
             ang_vel_yaw = [-1, 1]    # min max [rad/s]
             heading = [-3.14, 3.14]
 
-    class init_state:
+    class init_state: #初始状态
         pos = [0.0, 0.0, 1.] # x,y,z [m]
         rot = [0.0, 0.0, 0.0, 1.0] # x,y,z,w [quat]
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
@@ -93,20 +93,20 @@ class LeggedRobotCfg(BaseConfig):
         damping = {'joint_a': 1.0, 'joint_b': 1.5}     # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
-        # decimation: Number of control action updates @ sim DT per policy DT
+        # decimation: 仿真步长与控制步长的比例（每 4 次物理仿真更新 1 次算法指令）。
         decimation = 4
 
     class asset:
         file = ""
         name = "legged_robot"  # actor name
         foot_name = "None" # name of the feet bodies, used to index body state and contact force tensors
-        penalize_contacts_on = []
-        terminate_after_contacts_on = []
+        penalize_contacts_on = []   #碰撞惩罚部位
+        terminate_after_contacts_on = []  #碰撞后直接重置的部位
         disable_gravity = False
         collapse_fixed_joints = True # merge bodies connected by fixed joints. Specific fixed joints can be kept by adding " <... dont_collapse="true">
         fix_base_link = False # fixe the base of the robot
         default_dof_drive_mode = 3 # see GymDofDriveModeFlags (0 is none, 1 is pos tgt, 2 is vel tgt, 3 effort)
-        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter
+        self_collisions = 0 # 1 to disable, 0 to enable...bitwise filter 自身碰撞
         replace_cylinder_with_capsule = True # replace collision cylinders with capsules, leads to faster/more stable simulation
         flip_visual_attachments = True # Some .obj meshes must be flipped from y-up to z-up
         
@@ -118,42 +118,43 @@ class LeggedRobotCfg(BaseConfig):
         armature = 0.
         thickness = 0.01
 
-    class domain_rand:
-        randomize_friction = True
+    class domain_rand: #领域随机化
+        randomize_friction = True #是否随机摩擦力
         friction_range = [0.5, 1.25]
-        randomize_base_mass = False
+        randomize_base_mass = False# 随机质量
         added_mass_range = [-1., 1.]
-        push_robots = True
+        push_robots = True #是否推机器人
         push_interval_s = 15
         max_push_vel_xy = 1.
 
-    class rewards:
+    class rewards:  #奖励系数  
         class scales:
-            termination = -0.0
-            tracking_lin_vel = 1.0
-            tracking_ang_vel = 0.5
-            lin_vel_z = -2.0
-            ang_vel_xy = -0.05
+            termination = -0.0    
+            tracking_lin_vel = 1.0  #线速度跟踪
+            tracking_ang_vel = 0.5 #角速度跟踪
+            lin_vel_z = -2.0   # 垂直方向惩罚
+            ang_vel_xy = -0.05 # x y 方向角速度惩罚
             orientation = -0.
-            torques = -0.00001
+            torques = -0.00001 #能量 惩罚
             dof_vel = -0.
             dof_acc = -2.5e-7
             base_height = -0. 
-            feet_air_time =  1.0
-            collision = -1.
+            feet_air_time =  1.0  #鼓励机器人抬腿
+            collision = -1.   #碰撞惩罚
             feet_stumble = -0.0 
-            action_rate = -0.01
+            action_rate = -0.01  #鼓励平滑动作
             stand_still = -0.
 
         only_positive_rewards = True # if true negative total rewards are clipped at zero (avoids early termination problems)
         tracking_sigma = 0.25 # tracking reward = exp(-error^2/sigma)
+        # 软限制为 1 则最终限制等于硬限制
         soft_dof_pos_limit = 1. # percentage of urdf limits, values above this limit are penalized
         soft_dof_vel_limit = 1.
         soft_torque_limit = 1.
         base_height_target = 1.
         max_contact_force = 100. # forces above this value are penalized
 
-    class normalization:
+    class normalization: #归一化 
         class obs_scales:
             lin_vel = 2.0
             ang_vel = 0.25
@@ -199,7 +200,7 @@ class LeggedRobotCfg(BaseConfig):
             default_buffer_size_multiplier = 5
             contact_collection = 2 # 0: never, 1: last sub-step, 2: all sub-steps (default=2)
 
-class LeggedRobotCfgPPO(BaseConfig):
+class LeggedRobotCfgPPO(BaseConfig):  #PPO算法参数
     seed = 1
     runner_class_name = 'OnPolicyRunner'
     class policy:
