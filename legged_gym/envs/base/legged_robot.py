@@ -706,6 +706,7 @@ class LeggedRobot(BaseTask):
         self.num_bodies = len(body_names)
         self.num_dofs = len(self.dof_names)
         feet_names = [s for s in body_names if self.cfg.asset.foot_name in s]
+        print("feet----->",feet_names)
         penalized_contact_names = []
         for name in self.cfg.asset.penalize_contacts_on:
             penalized_contact_names.extend([s for s in body_names if name in s])
@@ -883,10 +884,12 @@ class LeggedRobot(BaseTask):
         # Penalize z axis base linear velocity
         return torch.square(self.base_lin_vel[:, 2])
     
+    # 惩罚 x y 轴角速度
     def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
         return torch.sum(torch.square(self.base_ang_vel[:, :2]), dim=1)
     
+    # 这里是 惩罚 在x, y方向的投影
     def _reward_orientation(self):
         # Penalize non flat base orientation
         return torch.sum(torch.square(self.projected_gravity[:, :2]), dim=1)
@@ -961,7 +964,7 @@ class LeggedRobot(BaseTask):
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
-    1
+    
     def _reward_stumble(self):
         # Penalize feet hitting vertical surfaces
         # 水平力大于垂直力  ， any( dim=1)  表示按列或，即 对于环境envx 来说， 任意一只脚的碰撞为1 ，则这个envx = 1
