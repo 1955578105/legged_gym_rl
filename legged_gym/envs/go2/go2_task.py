@@ -62,7 +62,7 @@ class go2_task(LeggedRobot):
         # 设定目标仰角，例如 0.785 弧度 (45度)
         target_pitch = 0.785 
         target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
-        return torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.1)
+        return torch.square(self.projected_gravity[:, 0] - target_gravity_x)
         
 
       # 前腿 如果触地 直接惩罚 

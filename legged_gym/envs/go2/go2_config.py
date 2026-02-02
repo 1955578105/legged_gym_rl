@@ -7,7 +7,7 @@ class GO2RoughCfg( LeggedRobotCfg ):
     class commands(LeggedRobotCfg.commands): #控制命令  正常是手柄给的
         heading_command = False # if true: compute ang vel command from heading error
         class ranges(LeggedRobotCfg.commands.ranges): #命令范围
-            lin_vel_x = [0.5, 1] # min max [m/s]
+            lin_vel_x = [0.3, 0.6] # min max [m/s]
             lin_vel_y = [0.0, 0.0]   # min max [m/s]
             ang_vel_yaw = [0.0, 0.0]    # min max [rad/s]
             heading = [-3.14, 3.14]
@@ -56,21 +56,21 @@ class GO2RoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.55
+        base_height_target = 0.5
         max_contact_force =150
 
         class scales( LeggedRobotCfg.rewards.scales ):
             orientation= 0.
-            orientation_x = -2
+            orientation_x = -1
             orientation_y =-0.5
             torques = -0.0002
             dof_pos_limits = -10.0
-            feet_air_time_front=-3.0
-            feet_air_time = 1
-            tracking_lin_vel = 1.0  #线速度跟踪
+            feet_air_time_front=-6.0
+            feet_air_time = 2
+            tracking_lin_vel = 2.0  #线速度跟踪
             tracking_ang_vel = 0.5 #角速度跟踪
-            lin_vel_z = -0.7   # 垂直方向惩罚
-            base_height =-1.2
+            lin_vel_z = -0.1   # 垂直方向惩罚
+            base_height =0.0
 
 class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
