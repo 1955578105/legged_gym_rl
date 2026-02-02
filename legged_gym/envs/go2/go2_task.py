@@ -47,12 +47,12 @@ class go2_task(LeggedRobot):
       # 惩罚 x y 轴角速度 改为只惩罚x轴
       def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
-        return torch.sum(torch.square(self.base_ang_vel[:, 0]), dim=1)
+        return torch.square(self.base_ang_vel[:, 0])
       
       # 重力 投影   改为 惩罚 y 方向的投影（不左右偏）   奖励 x方向的投影（鼓励站起来）
       def _reward_orientation_y(self):
         # Penalize non flat base orientation
-        return torch.sum(torch.square(self.projected_gravity[:, 1]), dim=1)
+        return torch.square(self.projected_gravity[:, 1])
       
       def _reward_orientation_x(self):
         # 设定目标仰角，例如 0.785 弧度 (45度)
@@ -67,10 +67,10 @@ class go2_task(LeggedRobot):
         # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
         contact = self.contact_forces[:, self.feet_indices[:2], 2] > 1.
         # 本次触地和上次触地 都算
-        contact_filt = torch.logical_or(contact, self.last_contacts) 
+        contact_filt = torch.logical_or(contact, self.last_contacts1) 
         self.last_contacts1 = contact
         # 返回 触地数量前两只腿触地数量和  
-        rew_airTime = torch.sum(contact,dim=1) 
+        rew_airTime = torch.sum(contact_filt,dim=1) 
         return rew_airTime
       
       # 后腿正常处理
@@ -82,7 +82,7 @@ class go2_task(LeggedRobot):
         contact_filt = torch.logical_or(contact, self.last_contacts) 
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
-        self.feet_air_time += self.dt
+        #self.feet_air_time += self.dt
         #  在触地时触发奖励： 滞空时间大于 0.5 正奖励  小于 0.5 负
         rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command

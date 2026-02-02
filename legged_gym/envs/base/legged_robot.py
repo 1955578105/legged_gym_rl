@@ -554,8 +554,11 @@ class LeggedRobot(BaseTask):
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])
         self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False) # x vel, y vel, yaw vel, heading
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], device=self.device, requires_grad=False,) # TODO change this
-        self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
-        self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
+        self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices[2:4].shape[0], dtype=torch.float, device=self.device, requires_grad=False)
+
+        self.last_contacts1 = torch.zeros(self.num_envs, len(self.feet_indices[0:2]), dtype=torch.bool, device=self.device, requires_grad=False)
+        
+        self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices[2:4]), dtype=torch.bool, device=self.device, requires_grad=False)
         #   quat_rotate_inverse  将世界系转到本体系   
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])

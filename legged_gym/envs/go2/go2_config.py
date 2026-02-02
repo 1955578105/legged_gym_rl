@@ -2,6 +2,8 @@ from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobot
 
 class GO2RoughCfg( LeggedRobotCfg ):
 
+    class env(LeggedRobotCfg.env):
+        num_envs= 1
     class commands(LeggedRobotCfg.commands): #控制命令  正常是手柄给的
         heading_command = False # if true: compute ang vel command from heading error
         class ranges: #命令范围
