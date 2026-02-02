@@ -46,7 +46,7 @@ class go2_task(LeggedRobot):
 
       def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
-        return torch.square(self.root_states[:, 9])
+        return torch.square(self.root_states[:, 9]);
     
       # 惩罚 x y 轴角速度 改为只惩罚x轴
       def _reward_ang_vel_xy(self):
