@@ -56,16 +56,17 @@ class GO2RoughCfg( LeggedRobotCfg ):
   
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.45
+        base_height_target = 0.4
         max_contact_force =150
 
         class scales( LeggedRobotCfg.rewards.scales ):
             orientation= 0.
-            orientation_x = 1.
+            orientation_x = 5
             orientation_y =-0.5
             torques = -0.0002
             dof_pos_limits = -10.0
             feet_air_time_front=-10.0
+            feet_air_time = 10
 
 class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):
