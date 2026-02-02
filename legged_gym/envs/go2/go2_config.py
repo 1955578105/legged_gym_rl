@@ -8,8 +8,8 @@ class GO2RoughCfg( LeggedRobotCfg ):
         heading_command = False # if true: compute ang vel command from heading error
         class ranges(LeggedRobotCfg.commands.ranges): #命令范围
             lin_vel_x = [0.5, 1] # min max [m/s]
-            lin_vel_y = [0, 0]   # min max [m/s]
-            ang_vel_yaw = [0, 0]    # min max [rad/s]
+            lin_vel_y = [0.0, 0.0]   # min max [m/s]
+            ang_vel_yaw = [0.0, 0.0]    # min max [rad/s]
             heading = [-3.14, 3.14]
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
