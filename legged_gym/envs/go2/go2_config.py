@@ -61,12 +61,15 @@ class GO2RoughCfg( LeggedRobotCfg ):
 
         class scales( LeggedRobotCfg.rewards.scales ):
             orientation= 0.
-            orientation_x = 5
+            orientation_x = -5
             orientation_y =-0.5
             torques = -0.0002
             dof_pos_limits = -10.0
             feet_air_time_front=-10.0
-            feet_air_time = 10
+            feet_air_time = 2
+            tracking_lin_vel = 5.0  #线速度跟踪
+            tracking_ang_vel = 0.5 #角速度跟踪
+            lin_vel_z = -6.0   # 垂直方向惩罚
 
 class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
     class algorithm( LeggedRobotCfgPPO.algorithm ):

@@ -44,6 +44,10 @@ class go2_task(LeggedRobot):
         return torch.exp(-lin_vel_error / self.cfg.rewards.tracking_sigma)
       
 
+      def _reward_lin_vel_z(self):
+        # Penalize z axis base linear velocity
+        return torch.square(self.root_states[:, 9])
+    
       # 惩罚 x y 轴角速度 改为只惩罚x轴
       def _reward_ang_vel_xy(self):
         # Penalize xy axes base angular velocity
@@ -88,3 +92,5 @@ class go2_task(LeggedRobot):
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
+      
+      # 速度 大于 0.1时 两只脚都在地上的数量
