@@ -46,7 +46,7 @@ class go2_task(LeggedRobot):
 
       def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
-        return torch.square(self.root_states[:, 9]);
+        return torch.square(self.root_states[:, 9])
     
       # 惩罚 x y 轴角速度 改为只惩罚x轴
       def _reward_ang_vel_xy(self):
@@ -86,7 +86,7 @@ class go2_task(LeggedRobot):
         contact_filt = torch.logical_or(contact, self.last_contacts) 
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
-        #self.feet_air_time += self.dt
+        self.feet_air_time += self.dt
         #  在触地时触发奖励： 滞空时间大于 0.5 正奖励  小于 0.5 负
         rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
