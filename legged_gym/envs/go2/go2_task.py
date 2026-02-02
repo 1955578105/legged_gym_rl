@@ -61,7 +61,7 @@ class go2_task(LeggedRobot):
       def _reward_orientation_x(self):
         # 设定目标仰角，例如 0.785 弧度 (45度)
         target_pitch = 0.785 
-        target_gravity_x = torch.sin(torch.tensor(target_pitch, device=self.device))
+        target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
         return torch.square(self.projected_gravity[:, 0] - target_gravity_x)
         
 
@@ -88,7 +88,7 @@ class go2_task(LeggedRobot):
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
         #  在触地时触发奖励： 滞空时间大于 0.5 正奖励  小于 0.5 负
-        rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+        rew_airTime = torch.sum((self.feet_air_time - 0.4) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
