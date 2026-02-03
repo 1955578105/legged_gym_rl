@@ -48,11 +48,19 @@ class go2_task(LeggedRobot):
         # Penalize z axis base linear velocity
         return torch.square(self.root_states[:, 9])
     
-      # 惩罚 x y 轴角速度 改为只惩罚x轴
-      def _reward_ang_vel_xy(self):
+      # 惩罚 x  轴角速度 
+      def _reward_ang_vel_x(self):
         # Penalize xy axes base angular velocity
         return torch.square(self.base_ang_vel[:, 0])
-      
+  
+      #惩罚 y轴角速度 进行 分层惩罚  
+      def _reward_ang_vel_y(self):
+        # Penalize xy axes base angular velocity
+        target_pitch = 0.785 
+        target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
+        # 接近目标时 error 接近1    远离目标 error接近 0 
+        error = torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.1)
+        return torch.square(self.base_ang_vel[:, 1]) *error
       # 重力 投影   改为 惩罚 y 方向的投影（不左右偏）   奖励 x方向的投影（鼓励站起来）
       def _reward_orientation_y(self):
         # Penalize non flat base orientation

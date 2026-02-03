@@ -524,6 +524,8 @@ class LeggedRobot(BaseTask):
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
 
+
+   
         # create some wrapper tensors for different slices
         # warp成pytorch张量
         self.root_states = gymtorch.wrap_tensor(actor_root_state)
