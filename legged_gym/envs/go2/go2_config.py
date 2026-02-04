@@ -74,7 +74,7 @@ class GO2RoughCfg( LeggedRobotCfg ):
             ang_vel_xy = 0.0 # x y 方向角速度惩罚
             ang_vel_x= -1
             ang_vel_y =-1
-            orientation_z=-2
+            orientation_z=-2.
            
 
 class GO2RoughCfgPPO( LeggedRobotCfgPPO ):
