@@ -42,7 +42,10 @@ class go2_task(LeggedRobot):
         lin_vel_error = torch.sum(torch.square(commands_world - self.root_states[:, 7:9]), dim=1)
 
         return torch.exp(-lin_vel_error / self.cfg.rewards.tracking_sigma)
-      
+      def _reward_base_height(self):
+        # Penalize base height away from target   #dim = 1 表示按列求平均  最后得到的base_height 是[4096,1]的
+        base_height = torch.mean(self.root_states[:, 2].unsqueeze(1) - self.measured_heights, dim=1)
+        return torch.exp(-torch.square(base_height - self.cfg.rewards.base_height_target)/0.2)
 
       def _reward_lin_vel_z(self):
         # Penalize z axis base linear velocity
@@ -78,9 +81,13 @@ class go2_task(LeggedRobot):
       
       def _reward_orientation_z(self):
         # 设定目标仰角，例如 0.785 弧度 (45度)
-
         return torch.exp(-torch.square(self.projected_gravity[:, 2] - 1)/0.25)
-        
+      
+      def _reward_swing(self):
+        e1= torch.exp(-torch.square(self.dof_pos[:,7] - self.last_dof_pos[:,7])/0.25)
+        e2 = torch.exp(-torch.square(self.dof_pos[:,10] - self.last_dof_pos[:,10])/0.25)
+        self.last_dof_pos =self.dof_pos
+        return e1+e2
 
       # 前腿 如果触地 直接惩罚 
       def _reward_feet_air_time_front(self):

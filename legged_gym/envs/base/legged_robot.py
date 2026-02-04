@@ -534,6 +534,8 @@ class LeggedRobot(BaseTask):
         # view 共享内存 不会复制数据   改变dof_state的值 会影响到 self.dof_pos 和 self.dof_vel
         #  view 将二维张量 变成 三维张量 shape: (num_envs, num_dof, 2) 
         self.dof_pos = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 0]
+        self.last_dof_pos= torch.zeros_like(self.dof_pos)
+        
         self.dof_vel = self.dof_state.view(self.num_envs, self.num_dof, 2)[..., 1]
         # 正好对应 四元数   [:,3:7]   第一个冒号 切割行  第二个冒号 切割列
         # root_states 是一个二维张量 shape: (num_envs, 13)
@@ -557,7 +559,8 @@ class LeggedRobot(BaseTask):
         self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False) # x vel, y vel, yaw vel, heading
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], device=self.device, requires_grad=False,) # TODO change this
         self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices[2:4].shape[0], dtype=torch.float, device=self.device, requires_grad=False)
-
+        # self change
+        
         self.last_contacts1 = torch.zeros(self.num_envs, len(self.feet_indices[0:2]), dtype=torch.bool, device=self.device, requires_grad=False)
         
         self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices[2:4]), dtype=torch.bool, device=self.device, requires_grad=False)
