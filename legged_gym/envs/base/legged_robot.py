@@ -556,11 +556,12 @@ class LeggedRobot(BaseTask):
         self.last_root_vel = torch.zeros_like(self.root_states[:, 7:13])
         self.commands = torch.zeros(self.num_envs, self.cfg.commands.num_commands, dtype=torch.float, device=self.device, requires_grad=False) # x vel, y vel, yaw vel, heading
         self.commands_scale = torch.tensor([self.obs_scales.lin_vel, self.obs_scales.lin_vel, self.obs_scales.ang_vel], device=self.device, requires_grad=False,) # TODO change this
-        self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices[2:4].shape[0], dtype=torch.float, device=self.device, requires_grad=False)
+        self.feet_air_time = torch.zeros(self.num_envs, self.feet_indices.shape[0], dtype=torch.float, device=self.device, requires_grad=False)
 
-        self.last_contacts1 = torch.zeros(self.num_envs, len(self.feet_indices[0:2]), dtype=torch.bool, device=self.device, requires_grad=False)
+        #self.last_contacts1 = torch.zeros(self.num_envs, len(self.feet_indices[0:2]), dtype=torch.bool, device=self.device, requires_grad=False)
         
-        self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices[2:4]), dtype=torch.bool, device=self.device, requires_grad=False)
+        self.last_contacts = torch.zeros(self.num_envs, len(self.feet_indices), dtype=torch.bool, device=self.device, requires_grad=False)
+        self.sum_contacts = torch.zeros_like(self.last_contacts)
         #   quat_rotate_inverse  将世界系转到本体系   
         self.base_lin_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
@@ -902,11 +903,11 @@ class LeggedRobot(BaseTask):
     def _reward_base_height(self):
         # Penalize base height away from target   #dim = 1 表示按列求平均  最后得到的base_height 是[4096,1]的
         base_height = torch.mean(self.root_states[:, 2].unsqueeze(1) - self.measured_heights, dim=1)
-        return torch.square(base_height - self.cfg.rewards.base_height_target)
+        return torch.exp(-torch.square(base_height - self.cfg.rewards.base_height_target)/0.25)
     
     def _reward_torques(self):
         # Penalize torques
-        return torch.sum(torch.square(self.torques), dim=1)
+        return torch.sum(torch.square(self.torques), dim=1) 
 
     def _reward_dof_vel(self):
         # Penalize dof velocities
@@ -965,7 +966,7 @@ class LeggedRobot(BaseTask):
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
         #  在触地时触发奖励： 滞空时间大于 0.5 正奖励  小于 0.5 负
-        rew_airTime = torch.sum((self.feet_air_time - 0.5) * first_contact, dim=1) # reward only on first contact with the ground
+        rew_airTime = torch.sum((self.feet_air_time - 0.4) * first_contact, dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
         self.feet_air_time *= ~contact_filt
         return rew_airTime
