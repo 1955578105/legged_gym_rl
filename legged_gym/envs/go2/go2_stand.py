@@ -3,7 +3,7 @@
 from legged_gym.envs.base.legged_robot import LeggedRobot
 import torch
 
-class go2_task(LeggedRobot):
+class go2_stand(LeggedRobot):
  
       # 角速度直接改为 世界下的表示
       def _reward_tracking_ang_vel(self):
@@ -40,34 +40,32 @@ class go2_task(LeggedRobot):
 
         # 4. 计算误差（世界坐标系下的指令 vs 世界坐标系下的实际速度）
         lin_vel_error = torch.sum(torch.square(commands_world - self.root_states[:, 7:9]), dim=1)
-
         return torch.exp(-lin_vel_error / self.cfg.rewards.tracking_sigma)
-      def _reward_base_height(self):
-        # Penalize base height away from target   #dim = 1 表示按列求平均  最后得到的base_height 是[4096,1]的
-        base_height = torch.mean(self.root_states[:, 2].unsqueeze(1) - self.measured_heights, dim=1)
-        return torch.exp(-torch.square(base_height - self.cfg.rewards.base_height_target)/0.2)
+      
 
-      def _reward_lin_vel_z(self):
-        # Penalize z axis base linear velocity
-        target_pitch = 0.785
-        target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
-        # 接近目标时 error 接近1    远离目标 error接近 0 
-        error = torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.2)
-        return torch.square(self.root_states[:, 9])*error
+
+      # def _reward_lin_vel_z(self):
+      #   # Penalize z axis base linear velocity
+      #   target_pitch = 0.785
+      #   target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
+      #   # 接近目标时 error 接近1    远离目标 error接近 0 
+      #   error = torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.2)
+      #   return torch.square(self.root_states[:, 9])*error
     
-      # 惩罚 x  轴角速度 
-      def _reward_ang_vel_x(self):
-        # Penalize xy axes base angular velocity
-        return torch.square(self.base_ang_vel[:, 0])
+      # # 惩罚 x  轴角速度 
+      # def _reward_ang_vel_x(self):
+      #   # Penalize xy axes base angular velocity
+      #   return torch.square(self.base_ang_vel[:, 0])
   
-      #惩罚 y轴角速度 进行 分层惩罚  
-      def _reward_ang_vel_y(self):
-        # Penalize xy axes base angular velocity
-        target_pitch = 0.785
-        target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
-        # 接近目标时 error 接近1    远离目标 error接近 0 
-        error = torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.08)
-        return torch.square(self.base_ang_vel[:, 1]) *error
+      # #惩罚 y轴角速度 进行 分层惩罚  
+      # def _reward_ang_vel_y(self):
+      #   # Penalize xy axes base angular velocity
+      #   target_pitch = 0.785
+      #   target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
+      #   # 接近目标时 error 接近1    远离目标 error接近 0 
+      #   error = torch.exp(-torch.square(self.projected_gravity[:, 0] - target_gravity_x)/0.08)
+      #   return torch.square(self.base_ang_vel[:, 1]) *error
+      
       # 重力 投影   改为 惩罚 y 方向的投影（不左右偏）   奖励 x方向的投影（鼓励站起来）
       def _reward_orientation_y(self):
         # Penalize non flat base orientation
@@ -79,41 +77,44 @@ class go2_task(LeggedRobot):
         target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
         return torch.square(self.projected_gravity[:, 0] - target_gravity_x)
       
-      def _reward_orientation_z(self):
-        # 设定目标仰角，例如 0.785 弧度 (45度)
-        return torch.exp(-torch.square(self.projected_gravity[:, 2] - 1)/0.25)
+      # def _reward_orientation_z(self):
+      #   # 设定目标仰角，例如 0.785 弧度 (45度)
+      #   return torch.exp(-torch.square(self.projected_gravity[:, 2] - 1)/0.25)
       
-      def _reward_swing(self):
-        e1= torch.exp(-torch.square(self.dof_pos[:,7] - self.last_dof_pos[:,7])/0.25)
-        e2 = torch.exp(-torch.square(self.dof_pos[:,10] - self.last_dof_pos[:,10])/0.25)
-        self.last_dof_pos =self.dof_pos
-        return e1+e2
+      # def _reward_swing(self):
+      #   e1= torch.exp(-torch.square(self.dof_pos[:,7] - self.last_dof_pos[:,7])/0.25)
+      #   e2 = torch.exp(-torch.square(self.dof_pos[:,10] - self.last_dof_pos[:,10])/0.25)
+      #   self.last_dof_pos =self.dof_pos
+      #   return e1+e2
 
-      # 前腿 如果触地 直接惩罚 
-      def _reward_feet_air_time_front(self):
-        # Reward long steps
-        # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
-        contact = self.contact_forces[:, self.feet_indices[:2], 2] > 1.
-        # 本次触地和上次触地 都算
-        contact_filt = torch.logical_or(contact, self.last_contacts1) 
-        self.last_contacts1 = contact
-        # 返回 触地数量前两只腿触地数量和  
-        rew_airTime = torch.sum(contact_filt,dim=1) 
-        return rew_airTime
+      # # 前腿 如果触地 直接惩罚 
+      # def _reward_feet_air_time_front(self):
+      #   # Reward long steps
+      #   # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
+      #   contact = self.contact_forces[:, self.feet_indices[:2], 2] > 1.
+      #   # 本次触地和上次触地 都算
+      #   contact_filt = torch.logical_or(contact, self.last_contacts1) 
+      #   self.last_contacts1 = contact
+      #   # 返回 触地数量前两只腿触地数量和  
+      #   rew_airTime = torch.sum(contact_filt,dim=1) 
+      #   return rew_airTime
       
       # 后腿正常处理
       def _reward_feet_air_time(self):
         # Reward long steps
         # Need to filter the contacts because the contact reporting of PhysX is unreliable on meshes
-        contact = self.contact_forces[:, self.feet_indices[2:4], 2] > 1.
+        contact = self.contact_forces[:, self.feet_indices, 2] > 1.
         # 本次触地和上次触地 都算
         contact_filt = torch.logical_or(contact, self.last_contacts) 
         self.last_contacts = contact
         first_contact = (self.feet_air_time > 0.) * contact_filt
         self.feet_air_time += self.dt
         #  在触地时触发奖励： 滞空时间大于 0.5 正奖励  小于 0.5 负
-        rew_airTime = torch.sum((self.feet_air_time - 0.4) * first_contact, dim=1) # reward only on first contact with the ground
+        rew_airTime = torch.sum((self.feet_air_time[:,2:4] - 0.4) * first_contact[:,2:4], dim=1) # reward only on first contact with the ground
         rew_airTime *= torch.norm(self.commands[:, :2], dim=1) > 0.1 #no reward for zero command
+        # stuck_air_time = ((self.feet_air_time-0.8).clip(min=0.))*0.3 +self.last_stuck_air_time*0.7
+        # self.last_stuck_air_time = stuck_air_time
+        # airtime = torch.sum(stuck_air_time*~contact_filt,dim=1)
         self.feet_air_time *= ~contact_filt
         return rew_airTime
       

@@ -54,37 +54,29 @@ class GO2RoughCfg( LeggedRobotCfg ):
         terminate_after_contacts_on = ["base"]
         self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
   
-    # class rewards( LeggedRobotCfg.rewards ):
-    #     soft_dof_pos_limit = 0.9
-    #     base_height_target = 0.45
-    #     max_contact_force =150
-
-    #     class scales( LeggedRobotCfg.rewards.scales ):
-    #         orientation= 0.
-    #         orientation_x = -2.5
-    #         orientation_y =-0.5
-    #         torques = -0.0002
-    #         dof_pos_limits = -10.0
-    #         feet_air_time_front=-1.5
-    #         feet_air_time = 2
-    #         tracking_lin_vel = 2.5  #线速度跟踪
-    #         tracking_ang_vel = 0.5 #角速度跟踪
-    #         lin_vel_z = -0.2   # 垂直方向惩罚
-    #         base_height =-3.0
-    #         ang_vel_xy = 0.0 # x y 方向角速度惩罚
-    #         ang_vel_x= -0.15
-    #         ang_vel_y =-1
-
-
+    # stand rewards
     class rewards( LeggedRobotCfg.rewards ):
         soft_dof_pos_limit = 0.9
-        base_height_target = 0.32
+        base_height_target = 0.55
         class scales( LeggedRobotCfg.rewards.scales ):
             torques = -0.0002
             dof_pos_limits = -10.0
             base_height = 2. 
-            orientation=-1.
+            orientation=-0.
+            orientation_y=-1.
+            orientation_x=-1.2
             tracking_lin_vel=2.
+
+    # # walk rewards
+    # class rewards( LeggedRobotCfg.rewards ):
+    #     soft_dof_pos_limit = 0.9
+    #     base_height_target = 0.32
+    #     class scales( LeggedRobotCfg.rewards.scales ):
+    #         torques = -0.0002
+    #         dof_pos_limits = -10.0
+    #         base_height = 2. 
+    #         orientation=-1.
+    #         tracking_lin_vel=2.
 
 
 
