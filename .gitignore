@@ -51,9 +51,14 @@ Thumbs.db
 # VS Code
 .vscode
 # logs
-logs
-runs
+logs/rough_go2/exported
+logs/rough_go2/touch
+logs/rough_go2/Success_walk/*
+!logs/rough_go2/Success_walk/model_7500.pt
 
+
+
+runs
 # other
 *.egg-info
 __pycache__
