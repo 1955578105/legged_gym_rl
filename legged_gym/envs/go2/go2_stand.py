@@ -73,7 +73,7 @@ class go2_stand(LeggedRobot):
       
       def _reward_orientation_x(self):
         # 设定目标仰角，例如 0.785 弧度 (45度)
-        target_pitch =0.785
+        target_pitch =0.7
         target_gravity_x = -torch.sin(torch.tensor(target_pitch, device=self.device))
         return torch.square(self.projected_gravity[:, 0] - target_gravity_x)
       

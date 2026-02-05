@@ -53,8 +53,11 @@ Thumbs.db
 # logs
 logs/rough_go2/exported
 logs/rough_go2/touch
+logs/rough_go2/Success_stand_onlyforward/*
 logs/rough_go2/Success_walk/*
+!logs/rough_go2/Success_stand_onlyforward/model_13500.pt
 !logs/rough_go2/Success_walk/model_7500.pt
+!logs/rough_go2/Success_walk/model_10500.pt
 
 
 
